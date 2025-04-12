@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   exit;
 }
 
-class My_Custom_Widget extends \Elementor\Widget_Base {
+class GS_Custom_Testimonial extends \Elementor\Widget_Base {
 
 	// Your widget's name, title, icon and category
     public function get_name() {

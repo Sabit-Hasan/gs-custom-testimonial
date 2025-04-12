@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: GS Custom Testimonial
- * Description: A custom Elementor widget that displays "Hello World"
+ * Description: GS Custom Testimonial is a lightweight and fully customizable Elementor widget plugin that allows you to display client testimonials in a stylish and responsive layout. Designed with performance and flexibility in mind, this widget supports Swiper.js integration, custom styling, and a smooth user experience.
  * Version: 1.0
  * Author: Md.Sabit Hasan
  * Author URI: https://github.com/Sabit-Hasan

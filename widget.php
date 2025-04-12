@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class GS_Custom_Testimonial extends \Elementor\Widget_Base {
 
-	// Your widget's name, title, icon and category
+	// Widget's name, title, icon and category
     public function get_name() {
         return 'gs_custom_testimonial';
     }
@@ -35,7 +35,7 @@ class GS_Custom_Testimonial extends \Elementor\Widget_Base {
 
 
 
-	// Your widget's sidebar settings
+	// Widget's sidebar settings
 	protected function _register_controls() {
 
     // === SLIDER OPTIONS ===
@@ -254,6 +254,47 @@ $this->add_control(
     ]
 );
     $this->end_controls_section();
+		
+	// === STYLE: Typography ===
+$this->start_controls_section(
+    'section_typography',
+    [
+        'label' => __( 'Typography', 'plugin-name' ),
+        'tab' => Controls_Manager::TAB_STYLE,
+    ]
+);
+
+// Name Typography
+$this->add_group_control(
+    \Elementor\Group_Control_Typography::get_type(),
+    [
+        'name' => 'name_typography',
+        'label' => __( 'Name Typography', 'plugin-name' ),
+        'selector' => '{{WRAPPER}} .testimonial-header strong',
+    ]
+);
+
+// Title Typography
+$this->add_group_control(
+    \Elementor\Group_Control_Typography::get_type(),
+    [
+        'name' => 'title_typography',
+        'label' => __( 'Title Typography', 'plugin-name' ),
+        'selector' => '{{WRAPPER}} .testimonial-slide h4',
+    ]
+);
+
+// Content Typography
+$this->add_group_control(
+    \Elementor\Group_Control_Typography::get_type(),
+    [
+        'name' => 'content_typography',
+        'label' => __( 'Content Typography', 'plugin-name' ),
+        'selector' => '{{WRAPPER}} .testimonial-slide p',
+    ]
+);
+
+$this->end_controls_section();
 
     // === STYLE: Arrow & Pagination ===
     $this->start_controls_section(

@@ -19,6 +19,6 @@ add_action( 'elementor/frontend/after_enqueue_scripts', function() {
 
 function register_custom_widget() {
     require_once plugin_dir_path( __FILE__ ) . 'widget.php';
-	\Elementor\Plugin::instance()->widgets_manager->register( new \My_Custom_Widget() );
+	\Elementor\Plugin::instance()->widgets_manager->register( new \GS_Custom_Testimonial() );
 }
 add_action( 'elementor/widgets/widgets_registered', 'register_custom_widget' );

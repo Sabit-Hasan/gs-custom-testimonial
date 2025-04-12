@@ -4,6 +4,14 @@
  * Description: A custom Elementor widget that displays "Hello World"
  * Version: 1.0
  * Author: Md.Sabit Hasan
+ * Author URI: https://github.com/Sabit-Hasan
+ * Github Plugin URI: https://github.com/Sabit-Hasan/gs-custom-testimonial
+ * License: GPL2
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: gs-custom-testimonial
+ * Domain Path: /languages
+ * Requires at least: 5.0
+ * Requires PHP: 7.0
  */
 
 // Exit if accessed directly

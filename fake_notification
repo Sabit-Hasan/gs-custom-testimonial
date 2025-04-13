@@ -1,0 +1,215 @@
+add_action('elementor/widgets/widgets_registered', function() {
+    if (!class_exists('Elementor\Widget_Base')) return;
+
+    class Elementor_Fake_Notification_Widget extends \Elementor\Widget_Base {
+        public function get_name() {
+            return 'fake_notification';
+        }
+
+        public function get_title() {
+            return 'Fake Buying Notification';
+        }
+
+        public function get_icon() {
+            return 'eicon-notification';
+        }
+
+        public function get_categories() {
+            return ['general'];
+        }
+
+        public function _register_controls() {
+            $this->start_controls_section('section_content', ['label' => __('Settings')]);
+
+            $this->add_control('product_ids', [
+                'label' => __('Product IDs (comma-separated)'),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'default' => '',
+            ]);
+
+            $this->add_control('position', [
+                'label' => __('Notification Position'),
+                'type' => \Elementor\Controls_Manager::SELECT,
+                'options' => [
+                    'bottom-left' => 'Bottom Left',
+                    'bottom-right' => 'Bottom Right',
+                    'top-left' => 'Top Left',
+                    'top-right' => 'Top Right',
+                ],
+                'default' => 'bottom-left',
+            ]);
+
+            $this->add_control('custom_country_name', [
+                'label' => __('Country Name'),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'default' => 'USA',
+            ]);
+
+            $this->add_control('custom_cities', [
+                'label' => __('Cities (comma-separated)'),
+                'type' => \Elementor\Controls_Manager::TEXTAREA,
+                'default' => 'New York,Los Angeles,Chicago,Houston',
+            ]);
+
+            $this->add_control('custom_sound', [
+                'label' => __('Notification Sound (MP3)'),
+                'type' => \Elementor\Controls_Manager::MEDIA,
+                'media_type' => 'audio',
+            ]);
+
+            $this->add_control('delay', [
+                'label' => __('Delay Between Notifications (ms)'),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'default' => 5000,
+            ]);
+
+            $this->add_control('background_color', [
+                'label' => __('Background Color'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#ffffff',
+            ]);
+
+            $this->add_control('text_color', [
+                'label' => __('Text Color'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#000000',
+            ]);
+
+            $this->end_controls_section();
+        }
+
+        public function render() {
+            $settings = $this->get_settings_for_display();
+            $ids = array_map('trim', explode(',', $settings['product_ids']));
+            $products = [];
+
+            foreach ($ids as $id) {
+                $product = wc_get_product($id);
+                if ($product) {
+                    $products[] = [
+                        'title' => $product->get_name(),
+                        'url' => get_permalink($product->get_id()),
+                        'image' => wp_get_attachment_url($product->get_image_id()),
+                    ];
+                }
+            }
+
+            if (empty($products)) {
+                echo "<p style='color:red;'>No valid product IDs provided.</p>";
+                return;
+            }
+
+            $cities = array_map('trim', explode(',', $settings['custom_cities']));
+            $country = $settings['custom_country_name'];
+            $sound_url = $settings['custom_sound']['url'] ?? '';
+
+            ?>
+            <div id="fake-buying-notification" class="<?php echo esc_attr($settings['position']); ?>" style="
+                display:none;
+                position:fixed;
+                z-index:9999;
+                background:<?php echo esc_attr($settings['background_color']); ?>;
+                color:<?php echo esc_attr($settings['text_color']); ?>;
+                padding:15px 20px;
+                border-radius:10px;
+                box-shadow:0 5px 15px rgba(0,0,0,0.2);
+                min-width:250px;
+                max-width:300px;
+                font-size:14px;
+                transition: opacity 0.5s ease;
+            ">
+                <span id="close-notification" style="
+                    position:absolute;
+                    top:5px;
+                    right:10px;
+                    cursor:pointer;
+                    font-size:18px;
+                    color:#999;
+                ">&times;</span>
+                <div style="display:flex;align-items:center;">
+                    <img id="fake-buyer-img" src="https://via.placeholder.com/40" style="width:40px;height:40px;border-radius:50%;margin-right:10px;">
+                    <div>
+                        <div id="fake-buyer-text"></div>
+                        <small id="fake-buyer-time" style="opacity:0.6;"></small>
+                    </div>
+                </div>
+            </div>
+
+            <audio id="fake-buying-sound" <?php if ($sound_url): ?>src="<?php echo esc_url($sound_url); ?>"<?php endif; ?> preload="auto"></audio>
+
+            <style>
+                .bottom-left { bottom: 20px; left: 20px; }
+                .bottom-right { bottom: 20px; right: 20px; }
+                .top-left { top: 20px; left: 20px; }
+                .top-right { top: 20px; right: 20px; }
+            </style>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const products = <?php echo json_encode($products); ?>;
+                    const cities = <?php echo json_encode($cities); ?>;
+                    const country = <?php echo json_encode($country); ?>;
+                    const sound = document.getElementById('fake-buying-sound');
+                    const box = document.getElementById('fake-buying-notification');
+                    const img = document.getElementById('fake-buyer-img');
+                    const text = document.getElementById('fake-buyer-text');
+                    const time = document.getElementById('fake-buyer-time');
+                    const closeBtn = document.getElementById('close-notification');
+                    let index = 0;
+                    let hideTimeout;
+
+                    function randomName() {
+                        const first = ['Al', 'Jo', 'Li', 'Sa', 'Ma', 'Lu', 'An', 'Ra', 'Ki', 'De'];
+                        const last = ['son', 'bert', 'ton', 'ra', 'ley', 'man', 'nald', 'ick', 'vin', 'ita'];
+                        return first[Math.floor(Math.random()*first.length)] + last[Math.floor(Math.random()*last.length)];
+                    }
+
+                    function randomTime() {
+                        const minutes = Math.floor(Math.random() * 3);
+                        const seconds = Math.floor(Math.random() * 60);
+                        if (minutes > 0) return `${minutes}m ${seconds}s ago`;
+                        return `${seconds}s ago`;
+                    }
+
+                    function showNotification() {
+                        const product = products[index];
+                        const name = randomName();
+                        const city = cities[Math.floor(Math.random() * cities.length)];
+
+                        img.src = `https://i.pravatar.cc/40?img=${Math.floor(Math.random() * 70) + 1}`;
+                        text.innerHTML = `<strong>${name}</strong> from ${city}, ${country} bought <a href="${product.url}" style="color:inherit;text-decoration:underline;">${product.title}</a>`;
+                        time.textContent = randomTime();
+
+                        box.style.display = 'block';
+                        box.style.opacity = 1;
+
+                        if (sound && sound.src) {
+                            sound.currentTime = 0;
+                            sound.play().catch(e => console.log("Muted autoplay prevented:", e));
+                        }
+
+                        clearTimeout(hideTimeout);
+                        hideTimeout = setTimeout(() => {
+                            box.style.opacity = 0;
+                            setTimeout(() => box.style.display = 'none', 500);
+                        }, 3000);
+
+                        index = (index + 1) % products.length;
+                    }
+
+                    closeBtn.addEventListener('click', () => {
+                        box.style.opacity = 0;
+                        setTimeout(() => box.style.display = 'none', 500);
+                        clearTimeout(hideTimeout);
+                    });
+
+                    setInterval(showNotification, <?php echo $settings['delay']; ?>);
+                    setTimeout(showNotification, 1500);
+                });
+            </script>
+            <?php
+        }
+    }
+
+    \Elementor\Plugin::instance()->widgets_manager->register_widget_type(new \Elementor_Fake_Notification_Widget);
+});

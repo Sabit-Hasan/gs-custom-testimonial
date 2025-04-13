@@ -19,14 +19,26 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// Enqueue Swiper assets for frontend
 add_action( 'elementor/frontend/after_enqueue_scripts', function() {
     wp_enqueue_script( 'swiper' );
     wp_enqueue_style( 'swiper' );
 } );
 
-
+// Register widget only if Elementor is loaded
 function register_custom_widget() {
-    require_once plugin_dir_path( __FILE__ ) . 'widget.php';
-	\Elementor\Plugin::instance()->widgets_manager->register( new \GS_Custom_Testimonial() );
+    // Only load widget if Elementor is active
+    if ( did_action( 'elementor/loaded' ) ) {
+        require_once plugin_dir_path( __FILE__ ) . 'widget.php';
+        \Elementor\Plugin::instance()->widgets_manager->register( new \GS_Custom_Testimonial() );
+    }
 }
 add_action( 'elementor/widgets/widgets_registered', 'register_custom_widget' );
+
+// Show admin notice if Elementor is not active
+function gs_custom_testimonial_admin_notice() {
+    if ( ! did_action( 'elementor/loaded' ) ) {
+        echo '<div class="notice notice-warning is-dismissible"><p><strong>GS Custom Testimonial</strong> requires Elementor to be installed and activated.</p></div>';
+    }
+}
+add_action( 'admin_notices', 'gs_custom_testimonial_admin_notice' );
